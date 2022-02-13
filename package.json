@@ -1,0 +1,23 @@
+{
+  "name": "alfred-notion-bookmarks",
+  "version": "1.0.0",
+  "description": "Alfred workflow to quickly find and open bookmarks saved in Notion.",
+  "private": true,
+  "main": "index.js",
+  "author": "Alex Lin",
+  "repository": {
+    "url": "https://github.com/allienx/alfred-notion-bookmarks"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "pkg --target macos --output alfred-notion-bookmarks index.js"
+  },
+  "dependencies": {
+    "axios": "0.26.0",
+    "cache-conf": "0.6.0",
+    "dotenv": "16.0.0"
+  },
+  "devDependencies": {
+    "prettier": "2.5.1"
+  }
+}
