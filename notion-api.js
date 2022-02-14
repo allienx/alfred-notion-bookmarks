@@ -7,7 +7,7 @@ class NotionApi {
     this.integrationToken = integrationToken
   }
 
-  async queryDatabase(databaseId, { allPages = false, startCursor } = {}) {
+  async queryDatabase(databaseId, { startCursor } = {}) {
     const url = `https://api.notion.com/v1/databases/${databaseId}/query`
     const headers = {
       'Notion-Version': '2021-08-16',
@@ -30,6 +30,31 @@ class NotionApi {
     const result = await axios.post(url, body, { headers })
 
     return result.data
+  }
+
+  async fetchAllResults(queryFn) {
+    const data = []
+
+    let cursor = null
+    let firstRequest = true
+
+    while (firstRequest || !!cursor) {
+      try {
+        const res = await queryFn({ cursor })
+
+        data.push(...res.results)
+
+        cursor = res.next_cursor
+      } catch (err) {
+        console.error(err)
+
+        cursor = null
+      }
+
+      firstRequest = false
+    }
+
+    return data
   }
 }
 

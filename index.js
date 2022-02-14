@@ -4,13 +4,8 @@ const dotenv = require('dotenv')
 const NotionApi = require('./notion-api')
 
 const CLEAR_CACHE = 'clear-cache'
-const startMs = Date.now()
 
-main().finally(() => {
-  const endMs = Date.now()
-
-  console.error(`\n✨  Done in ${(endMs - startMs) / 1000}s.`)
-})
+timeExecution(main)
 
 async function main() {
   const inputQuery = process.argv[2]
@@ -31,17 +26,19 @@ async function main() {
   if (!pages) {
     const notion = new NotionApi(env.integrationToken)
 
-    pages = await fetchAllDatabasePages(notion, env.databaseId)
+    pages = await notion.fetchAllResults(({ cursor }) => {
+      return notion.queryDatabase(env.databaseId, { startCursor: cursor })
+    })
 
     cache.set(cacheKey, pages, {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds}
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     })
   }
 
   const items = [
     {
       uid: CLEAR_CACHE,
-      title: 'clear',
+      title: 'clear cache',
       subtitle: 'Clear cached data so bookmarks are refreshed on next trigger',
       arg: CLEAR_CACHE,
     },
@@ -69,6 +66,7 @@ function getEnv() {
   const alfredWorkflowUid = process.env.alfred_workflow_uid
   const alfredWorkflowVersion = process.env.alfred_workflow_version
 
+  // Load variables from .env when the script is not run by Alfred.
   if (!alfredVersion) {
     dotenv.config()
   }
@@ -86,29 +84,12 @@ function getEnv() {
   }
 }
 
-async function fetchAllDatabasePages(notion, databaseId) {
-  const pages = []
+function timeExecution(fn) {
+  const startMs = Date.now()
 
-  let cursor = null
-  let firstRequest = true
+  fn().finally(() => {
+    const endMs = Date.now()
 
-  while (firstRequest || !!cursor) {
-    try {
-      const res = await notion.queryDatabase(databaseId, {
-        startCursor: cursor,
-      })
-
-      pages.push(...res.results)
-
-      cursor = res.next_cursor
-    } catch (err) {
-      console.error(err)
-
-      cursor = null
-    }
-
-    firstRequest = false
-  }
-
-  return pages
+    console.error(`\n✨  Done in ${(endMs - startMs) / 1000}s.`)
+  })
 }
