@@ -2,6 +2,7 @@ const CacheConf = require('cache-conf')
 const dotenv = require('dotenv')
 
 const NotionApi = require('./notion-api')
+const packageJson = require('./package.json')
 
 const CLEAR_CACHE = 'clear-cache'
 
@@ -64,9 +65,9 @@ async function main() {
 function getEnv() {
   const alfredVersion = process.env.alfred_version
   const alfredWorkflowName =
-    process.env.alfred_workflow_name || 'alfred-notion-bookmarks'
-  const alfredWorkflowUid = process.env.alfred_workflow_uid
-  const alfredWorkflowVersion = process.env.alfred_workflow_version
+    process.env.alfred_workflow_name || packageJson.name
+  const alfredWorkflowVersion =
+    process.env.alfred_workflow_version || packageJson.version
 
   // Load variables from .env when the script is not run by Alfred.
   if (!alfredVersion) {
@@ -79,7 +80,6 @@ function getEnv() {
   return {
     alfredVersion,
     alfredWorkflowName,
-    alfredWorkflowUid,
     alfredWorkflowVersion,
     integrationToken,
     databaseId,
